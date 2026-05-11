@@ -16,8 +16,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() =>
-        context.read<ProductProvider>().fetchProducts());
+    Future.microtask(() => context.read<ProductProvider>().fetchProducts());
   }
 
   Future<void> _confirmDelete(BuildContext context, ProductModel product) async {
@@ -28,19 +27,19 @@ class _ProductsScreenState extends State<ProductsScreen> {
         content: Text('Are you sure you want to delete "${product.name}"?'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
           TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child:
-                  const Text('Delete', style: TextStyle(color: Colors.red))),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
         ],
       ),
     );
 
     if (confirmed == true && context.mounted) {
-      final error =
-          await context.read<ProductProvider>().deleteProduct(product.id);
+      final error = await context.read<ProductProvider>().deleteProduct(product.id);
       if (error != null && context.mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(error)));
@@ -53,16 +52,22 @@ class _ProductsScreenState extends State<ProductsScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Products')),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const ProductFormScreen()),
-        ),
+        onPressed: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ProductFormScreen()),
+          );
+          // Refresh if product was added
+          if (result == true && context.mounted) {
+            context.read<ProductProvider>().fetchProducts();
+          }
+        },
         icon: const Icon(Icons.add),
         label: const Text('Add Product'),
       ),
       body: Consumer<ProductProvider>(
         builder: (context, provider, _) {
-          if (provider.isLoading) {
+          if (provider.isLoading && provider.products.isEmpty) {
             return const Center(child: CircularProgressIndicator());
           }
           if (provider.products.isEmpty) {
@@ -82,27 +87,39 @@ class _ProductsScreenState extends State<ProductsScreen> {
                     width: 56,
                     height: 56,
                     fit: BoxFit.cover,
-                    placeholder: (_, __) =>
-                        const CircularProgressIndicator(),
+                    placeholder: (_, __) => const SizedBox(
+                      width: 56,
+                      height: 56,
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
                     errorWidget: (_, __, ___) => const Icon(Icons.broken_image),
                   ),
                 ),
-                title: Text(product.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                title: Text(
+                  product.name,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
                 subtitle: Text(
-                    'KES ${product.price.toStringAsFixed(2)}  •  Stock: ${product.stock}'),
+                  'KES ${product.price.toStringAsFixed(2)}  •  Stock: ${product.stock}',
+                ),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
                       icon: const Icon(Icons.edit, color: Colors.blue),
-                      onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              ProductsScreen(),
-                        ),
-                      ),
+                      onPressed: () async {
+                        // FIXED: Navigate to ProductFormScreen with product data
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ProductFormScreen(product: product),
+                          ),
+                        );
+                        // Refresh if product was updated
+                        if (result == true && context.mounted) {
+                          context.read<ProductProvider>().fetchProducts();
+                        }
+                      },
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),

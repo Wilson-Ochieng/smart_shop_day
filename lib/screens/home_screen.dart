@@ -4,7 +4,6 @@ import 'package:smartshop/providers/theme_provider.dart';
 import 'package:smartshop/services/app_manager.dart';
 import 'package:smartshop/wigets/apptextname.dart';
 import 'package:smartshop/wigets/drawer.dart';
-import 'package:smartshop/wigets/titletext.dart';
 
 class HomeScreen extends StatefulWidget {
   static const routName = "/HomeScreen";
@@ -16,7 +15,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _counter = 0;
-  int _currentIndex = 0; 
+  final int _currentIndex = 0; 
 
   _increment() {
     setState(() {

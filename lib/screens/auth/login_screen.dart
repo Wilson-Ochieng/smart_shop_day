@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:smartshop/providers/user_provider.dart';
 import 'package:smartshop/root_screen.dart';
 import 'package:smartshop/screens/admin/admin_dashboard.dart';
+import 'package:smartshop/screens/auth/forgot_password.dart';
 import 'package:smartshop/screens/auth/register_screen.dart';
 import 'package:smartshop/wigets/apptextname.dart';
 import 'package:smartshop/wigets/titletext.dart';
@@ -169,7 +170,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       Align(
                         alignment: Alignment.centerRight,
                         child: TextButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.pushNamed(
+                              context,
+                              ForgotPasswordScreen.routeName,
+                            );
+                          },
                           child: const TitlesTextWidget(
                             label: "Forgot password?",
                           ),
