@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:smartshop/providers/theme_provider.dart';
 import 'package:smartshop/providers/user_provider.dart';
 import 'package:smartshop/screens/auth/login_screen.dart';
+import 'package:smartshop/screens/inner_screens/wishlisht_screen.dart';
 import 'package:smartshop/services/app_manager.dart';
 import 'package:smartshop/services/my_functions.dart';
 import 'package:smartshop/wigets/sub_titletext%20.dart';
@@ -106,6 +107,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                     text: "Wishlist",
                     imagePath: AssetsManager.wishlistSvg,
                     function: () {
+                      Navigator.pushNamed(context, WishlistScreen.routName);
                     },
                   ),
                   CustomListTile(

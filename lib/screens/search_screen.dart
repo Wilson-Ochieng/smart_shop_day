@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:smartshop/models/product_model.dart';
 import 'package:smartshop/providers/product_provider.dart';
+import 'package:smartshop/providers/wishlist_provider.dart';
 import 'package:smartshop/screens/productWidget.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -80,6 +81,54 @@ class _SearchScreenState extends State<SearchScreen> {
         ),
         backgroundColor: Colors.white,
         elevation: 0,
+        actions: [
+          Consumer<WishlistProvider>(
+            builder: (context, wishlistProvider, child) {
+              final wishlistCount = wishlistProvider.getWishlists.length;
+              return Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.favorite_border),
+                    onPressed: () {
+                      // Navigate to wishlist screen
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Wishlist screen coming soon'),
+                          duration: Duration(seconds: 1),
+                        ),
+                      );
+                    },
+                  ),
+                  if (wishlistCount > 0)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Text(
+                          '$wishlistCount',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(130),
           child: Column(

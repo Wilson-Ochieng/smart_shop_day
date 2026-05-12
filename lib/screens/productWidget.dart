@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:smartshop/models/product_model.dart';
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
+import 'package:smartshop/wigets/heart_btn.dart';
 
 // Reusable Product Widget
 class ProductWidget extends StatelessWidget {
@@ -47,23 +48,37 @@ class ProductWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Product image
-        ClipRRect(
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(15),
-            topRight: Radius.circular(15),
-          ),
-          child: FancyShimmerImage(
-            imageUrl: product.imageUrl,
-            height: imageHeight,
-            width: imageWidth ?? double.infinity,
-            boxFit: imageFit,
-            errorWidget: Container(
-              height: imageHeight,
-              color: Colors.grey.shade200,
-              child: const Icon(Icons.broken_image, size: 40),
+        // Product image with heart button overlay
+        Stack(
+          children: [
+            ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(15),
+                topRight: Radius.circular(15),
+              ),
+              child: FancyShimmerImage(
+                imageUrl: product.imageUrl,
+                height: imageHeight,
+                width: imageWidth ?? double.infinity,
+                boxFit: imageFit,
+                errorWidget: Container(
+                  height: imageHeight,
+                  color: Colors.grey.shade200,
+                  child: const Icon(Icons.broken_image, size: 40),
+                ),
+              ),
             ),
-          ),
+            // Heart button overlay
+            Positioned(
+              top: 8,
+              right: 8,
+              child: HeartButtonWidget(
+                product: product,
+                bkgColor: Colors.white.withOpacity(0.9),
+                size: 20,
+              ),
+            ),
+          ],
         ),
         
         // Product details
@@ -133,20 +148,34 @@ class ProductWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Product image
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: FancyShimmerImage(
-              imageUrl: product.imageUrl,
-              height: 100,
-              width: 100,
-              boxFit: BoxFit.cover,
-              errorWidget: Container(
-                height: 100,
-                width: 100,
-                color: Colors.grey.shade200,
-                child: const Icon(Icons.broken_image, size: 40),
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: FancyShimmerImage(
+                  imageUrl: product.imageUrl,
+                  height: 100,
+                  width: 100,
+                  boxFit: BoxFit.cover,
+                  errorWidget: Container(
+                    height: 100,
+                    width: 100,
+                    color: Colors.grey.shade200,
+                    child: const Icon(Icons.broken_image, size: 40),
+                  ),
+                ),
               ),
-            ),
+              // Heart button overlay
+              Positioned(
+                top: 4,
+                right: 4,
+                child: HeartButtonWidget(
+                  product: product,
+                  bkgColor: Colors.white.withOpacity(0.9),
+                  size: 18,
+                ),
+              ),
+            ],
           ),
           const SizedBox(width: 16),
           // Product details
@@ -220,17 +249,31 @@ class ProductWidget extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
-              ),
-              child: FancyShimmerImage(
-                imageUrl: product.imageUrl,
-                height: 200,
-                width: double.infinity,
-                boxFit: BoxFit.cover,
-              ),
+            // Image with heart button in dialog
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                  child: FancyShimmerImage(
+                    imageUrl: product.imageUrl,
+                    height: 200,
+                    width: double.infinity,
+                    boxFit: BoxFit.cover,
+                  ),
+                ),
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: HeartButtonWidget(
+                    product: product,
+                    bkgColor: Colors.white.withOpacity(0.9),
+                    size: 24,
+                  ),
+                ),
+              ],
             ),
             Padding(
               padding: const EdgeInsets.all(20),
@@ -263,7 +306,7 @@ class ProductWidget extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'USD ${product.price.toStringAsFixed(2)}',
+                    'KES ${product.price.toStringAsFixed(2)}',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,

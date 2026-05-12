@@ -71,15 +71,15 @@ class _HomeScreenState extends State<HomeScreen> {
             //   child: const Text("Shop Now")
             // ),
             const SizedBox(height: 20),
-            SwitchListTile(
-              title: Text(
-                themeProvider.getIsDarkTheme ? "Dark Theme" : "Light theme",
-              ),
-              value: themeProvider.getIsDarkTheme,
-              onChanged: (value) {
-                themeProvider.setDarkTheme(value);
-              },
-            ),
+            // SwitchListTile(
+            //   title: Text(
+            //     themeProvider.getIsDarkTheme ? "Dark Theme" : "Light theme",
+            //   ),
+            //   value: themeProvider.getIsDarkTheme,
+            //   onChanged: (value) {
+            //     themeProvider.setDarkTheme(value);
+            //   },
+            // ),
           ],
         ),
       ),

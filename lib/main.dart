@@ -9,12 +9,14 @@ import 'package:smartshop/models/product_model.dart';
 import 'package:smartshop/providers/product_provider.dart';
 import 'package:smartshop/providers/theme_provider.dart';
 import 'package:smartshop/providers/user_provider.dart';
+import 'package:smartshop/providers/wishlist_provider.dart';
 import 'package:smartshop/root_screen.dart';
 import 'package:smartshop/screens/admin/admin_dashboard.dart';
 import 'package:smartshop/screens/admin/product_form_screen.dart';
 import 'package:smartshop/screens/auth/forgot_password.dart';
 import 'package:smartshop/screens/auth/login_screen.dart';
 import 'package:smartshop/screens/auth/register_screen.dart';
+import 'package:smartshop/screens/inner_screens/wishlisht_screen.dart';
 import 'package:smartshop/screens/product_detail_screen.dart';
 import 'package:smartshop/screens/search_screen.dart'; 
 
@@ -33,6 +35,8 @@ void main() async {
           create: (_) => UserProvider(),
         ),
        ChangeNotifierProvider(create: (_) => ProductProvider()),
+       ChangeNotifierProvider(create: (_) => WishlistProvider()),
+
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
@@ -54,6 +58,7 @@ void main() async {
               ProductFormScreen.routName: (context) => const ProductFormScreen(),
               ForgotPasswordScreen.routeName: (context) => const ForgotPasswordScreen(),
               SearchScreen.routName: (context) => const SearchScreen(), 
+              WishlistScreen.routName:(context) => const WishlistScreen()
             },
             onGenerateRoute: (settings) {
               // Handle routes that need arguments
