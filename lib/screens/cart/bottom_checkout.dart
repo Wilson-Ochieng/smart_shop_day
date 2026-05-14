@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:smartshop/models/cart_model.dart';
 import 'package:smartshop/providers/cart_prodiver.dart';
 import 'package:smartshop/providers/product_provider.dart';
+import 'package:smartshop/screens/orders/orders_summary.dart';
 import 'package:smartshop/wigets/sub_titletext%20.dart';
 import 'package:smartshop/wigets/titletext.dart';
 
@@ -47,16 +48,27 @@ class CartBottomSheetWidget extends StatelessWidget {
                   ],
                 ),
               ),
+          
               ElevatedButton(
                 onPressed: () {
                   // IMPORTANT: Save current cart state BEFORE navigating
-                  final currentCartItems = Map<String, CartModel>.from(
-                    cartProvider.getCartItems,
-                  );
+                  final currentCartItems = Map<String, CartModel>.from(cartProvider.getCartItems);
                   final currentTotalQty = cartProvider.getQty();
-
+                  
                   // Reset restore flags BEFORE creating new order
                   cartProvider.resetRestoreFlags();
+                  
+                  // Navigate to order summary
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => OrderSummaryScreen(
+                        cartItems: currentCartItems,
+                        totalPrice: totalPrice,
+                        totalQty: currentTotalQty,
+                      ),
+                    ),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,

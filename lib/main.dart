@@ -4,9 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:smartshop/constants/styles.dart';
-import 'package:smartshop/firebase_options.dart';
+import 'package:smartshop/wigets/firebase_options.dart';
 import 'package:smartshop/models/product_model.dart';
 import 'package:smartshop/providers/cart_prodiver.dart';
+import 'package:smartshop/providers/order_provider.dart';
 import 'package:smartshop/providers/product_provider.dart';
 import 'package:smartshop/providers/theme_provider.dart';
 import 'package:smartshop/providers/user_provider.dart';
@@ -37,6 +38,9 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ProductProvider()),
         ChangeNotifierProvider(create: (_) => WishlistProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
+        ChangeNotifierProvider(create: (_) => OrdersProvider()),
+
+
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
@@ -63,7 +67,7 @@ void main() async {
               WishlistScreen.routName: (context) => const WishlistScreen(),
               CartScreen.routName: (context) => const CartScreen(),
               OrderStatusScreen.routeName: (context) => OrderStatusScreen(orderId: ModalRoute.of(context)!.settings.arguments as String,),
-              OrderScreen.routeName:(context) => const OrderScreen(orderData: {},),
+              OrderScreen.routeName:(context) => const OrderScreen(),
               
             },
             onGenerateRoute: (settings) {
