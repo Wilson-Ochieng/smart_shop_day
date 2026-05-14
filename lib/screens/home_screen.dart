@@ -1,6 +1,5 @@
 import 'package:card_swiper/card_swiper.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:smartshop/constants/app_constants.dart';
 import 'package:smartshop/services/app_manager.dart';
 import 'package:smartshop/wigets/apptextname.dart';

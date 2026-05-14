@@ -6,6 +6,7 @@ import 'package:smartshop/providers/theme_provider.dart';
 import 'package:smartshop/providers/user_provider.dart';
 import 'package:smartshop/screens/auth/login_screen.dart';
 import 'package:smartshop/screens/inner_screens/wishlisht_screen.dart';
+import 'package:smartshop/screens/orders/orders_screen.dart';
 import 'package:smartshop/services/app_manager.dart';
 import 'package:smartshop/services/my_functions.dart';
 import 'package:smartshop/wigets/sub_titletext%20.dart';
@@ -101,6 +102,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                     text: "All Orders",
                     imagePath: AssetsManager.orderSvg,
                     function: () {
+                         Navigator.pushNamed(context,OrderScreen.routeName);
                     },
                   ),
                   CustomListTile(

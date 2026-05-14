@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:smartshop/services/app_manager.dart';
 
 class AppConstants {

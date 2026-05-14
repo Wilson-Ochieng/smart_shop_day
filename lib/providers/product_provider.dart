@@ -8,11 +8,38 @@ import 'package:smartshop/services/cloudinary_service.dart';
 class ProductProvider with ChangeNotifier {
   List<ProductModel> _products = [];
   bool _isLoading = false;
-
-  List<ProductModel> get products => _products;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  
+  // Track unique categories for filtering
+  List<String> _categories = [];
+  
+  List<ProductModel> get getProducts => _products;
   bool get isLoading => _isLoading;
+  List<ProductModel> get products => _products;
+  
+  // Get unique categories from products
+  List<String> get categories {
+    _updateCategories();
+    return _categories;
+  }
 
-  final _firestore = FirebaseFirestore.instance;
+  // Get category count for each category
+  Map<String, int> get categoryCount {
+    final Map<String, int> count = {};
+    for (final product in _products) {
+      count[product.category] = (count[product.category] ?? 0) + 1;
+    }
+    return count;
+  }
+
+  // Update categories list from current products
+  void _updateCategories() {
+    final uniqueCategories = <String>{};
+    for (final product in _products) {
+      uniqueCategories.add(product.category);
+    }
+    _categories = uniqueCategories.toList()..sort();
+  }
 
   Future<void> fetchProducts({bool forceRefresh = false}) async {
     // Skip if already loading
@@ -33,6 +60,8 @@ class ProductProvider with ChangeNotifier {
       _products = snapshot.docs
           .map((doc) => ProductModel.fromDocument(doc.id, doc.data()))
           .toList();
+      
+      _updateCategories();
     } catch (e) {
       debugPrint('Error fetching products: $e');
     }
@@ -88,6 +117,8 @@ class ProductProvider with ChangeNotifier {
           createdBy: createdBy,
         ),
       );
+      
+      _updateCategories();
       notifyListeners();
       return null;
     } catch (e) {
@@ -143,6 +174,8 @@ class ProductProvider with ChangeNotifier {
           createdBy: createdBy,
         ),
       );
+      
+      _updateCategories();
       notifyListeners();
       return null;
     } catch (e) {
@@ -202,6 +235,8 @@ class ProductProvider with ChangeNotifier {
           stock: stock,
           createdBy: _products[index].createdBy,
         );
+        
+        _updateCategories();
         notifyListeners();
       }
       return null;
@@ -258,6 +293,8 @@ class ProductProvider with ChangeNotifier {
           stock: stock,
           createdBy: _products[index].createdBy,
         );
+        
+        _updateCategories();
         notifyListeners();
       }
       return null;
@@ -271,10 +308,108 @@ class ProductProvider with ChangeNotifier {
     try {
       await _firestore.collection('products').doc(productId).delete();
       _products.removeWhere((p) => p.id == productId);
+      
+      _updateCategories();
       notifyListeners();
       return null;
     } catch (e) {
       return e.toString();
     }
+  }
+
+  // Find product by ID
+  ProductModel? findByProdId(String productId) {
+    try {
+      return _products.firstWhere((element) => element.id == productId);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // Find products by category (case-insensitive)
+  List<ProductModel> findByCategory({required String categoryName}) {
+    if (categoryName == "All") {
+      return _products;
+    }
+    return _products
+        .where(
+          (element) => element.category.toLowerCase().contains(
+            categoryName.toLowerCase(),
+          ),
+        )
+        .toList();
+  }
+
+  // Get products by exact category match
+  List<ProductModel> getProductsByCategory({required String category}) {
+    return _products.where((product) => product.category == category).toList();
+  }
+
+  // Search products by name or description
+  List<ProductModel> searchProducts({required String searchText}) {
+    if (searchText.isEmpty) return _products;
+    
+    return _products.where((product) {
+      return product.name.toLowerCase().contains(searchText.toLowerCase()) ||
+          product.description.toLowerCase().contains(searchText.toLowerCase()) ||
+          product.category.toLowerCase().contains(searchText.toLowerCase());
+    }).toList();
+  }
+
+  // Search within a specific list (for filtering)
+  List<ProductModel> searchQuery({
+    required String searchText,
+    required List<ProductModel> passedList,
+  }) {
+    if (searchText.isEmpty) return passedList;
+    
+    return passedList
+        .where(
+          (element) => element.name.toLowerCase().contains(
+            searchText.toLowerCase(),
+          ),
+        )
+        .toList();
+  }
+
+  // Get featured products (e.g., first 6 products or by some criteria)
+  List<ProductModel> getFeaturedProducts({int limit = 6}) {
+    return _products.take(limit).toList();
+  }
+
+  // Get products by price range
+  List<ProductModel> getProductsByPriceRange({
+    required double minPrice,
+    required double maxPrice,
+  }) {
+    return _products.where((product) {
+      return product.price >= minPrice && product.price <= maxPrice;
+    }).toList();
+  }
+
+  // Get products with low stock (for admin alerts)
+  List<ProductModel> getLowStockProducts({int threshold = 5}) {
+    return _products.where((product) => product.stock <= threshold).toList();
+  }
+
+  // Get products count by category
+  int getProductCountByCategory(String category) {
+    return _products.where((product) => product.category == category).length;
+  }
+
+  // Get all unique categories with product counts
+  Map<String, int> getCategoriesWithCount() {
+    final Map<String, int> categoryMap = {};
+    for (final product in _products) {
+      categoryMap[product.category] = (categoryMap[product.category] ?? 0) + 1;
+    }
+    return categoryMap;
+  }
+
+  // Clear all products (useful for logout)
+  void clearProducts() {
+    _products.clear();
+    _categories.clear();
+    notifyListeners();
   }
 }

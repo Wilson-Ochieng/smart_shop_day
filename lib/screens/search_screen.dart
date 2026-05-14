@@ -22,12 +22,9 @@ class _SearchScreenState extends State<SearchScreen> {
   String _selectedCategory = "All";
   bool _isSearching = false;
 
-  // Get unique categories from products
   List<String> get _categories {
-    final provider = context.read<ProductProvider>();
-    final categories = provider.products.map((p) => p.category).toSet().toList();
-    categories.sort();
-    return ["All", ...categories];
+    final provider = Provider.of<ProductProvider>(context);
+    return ["All", ...provider.categories];
   }
 
   @override
@@ -49,20 +46,25 @@ class _SearchScreenState extends State<SearchScreen> {
 
   List<ProductModel> get _filteredProducts {
     final provider = context.read<ProductProvider>();
+    
+    // Start with all products
     List<ProductModel> products = provider.products;
 
-    // Filter by search query
+    // Filter by search query using provider's searchProducts method
     if (_searchQuery.isNotEmpty) {
-      products = products.where((product) {
-        return product.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-            product.description.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-            product.category.toLowerCase().contains(_searchQuery.toLowerCase());
-      }).toList();
+      products = provider.searchProducts(searchText: _searchQuery);
     }
 
-    // Filter by category
+    // Filter by category using provider's findByCategory method
     if (_selectedCategory != "All") {
-      products = products.where((product) {
+      products = provider.findByCategory(categoryName: _selectedCategory);
+    }
+    
+    // If both filters are applied, we need to intersect the results
+    if (_searchQuery.isNotEmpty && _selectedCategory != "All") {
+      // First get search results, then filter by category
+      final searchResults = provider.searchProducts(searchText: _searchQuery);
+      products = searchResults.where((product) {
         return product.category == _selectedCategory;
       }).toList();
     }
@@ -82,6 +84,7 @@ class _SearchScreenState extends State<SearchScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         actions: [
+          // Wishlist counter badge
           Consumer<WishlistProvider>(
             builder: (context, wishlistProvider, child) {
               final wishlistCount = wishlistProvider.getWishlists.length;
@@ -178,10 +181,13 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                 ),
               ),
-              // Category Filter Chips
+              // Category Filter Chips with category counts
               Consumer<ProductProvider>(
                 builder: (context, provider, child) {
                   if (provider.products.isEmpty) return const SizedBox.shrink();
+                  
+                  // Get category counts for display
+                  final categoryCounts = provider.categoryCount;
                   
                   return Container(
                     height: 50,
@@ -194,10 +200,15 @@ class _SearchScreenState extends State<SearchScreen> {
                         final category = _categories[index];
                         final isSelected = _selectedCategory == category;
                         
+                        // Display count for categories (except "All")
+                        final count = category == "All" 
+                            ? provider.products.length 
+                            : (categoryCounts[category] ?? 0);
+                        
                         return Padding(
                           padding: const EdgeInsets.only(right: 8),
                           child: FilterChip(
-                            label: Text(category),
+                            label: Text('$category ($count)'),
                             selected: isSelected,
                             onSelected: (selected) {
                               setState(() {
@@ -213,6 +224,7 @@ class _SearchScreenState extends State<SearchScreen> {
                             labelStyle: TextStyle(
                               color: isSelected ? Colors.white : Colors.grey.shade700,
                               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              fontSize: 13,
                             ),
                             shape: StadiumBorder(
                               side: BorderSide(
@@ -228,6 +240,47 @@ class _SearchScreenState extends State<SearchScreen> {
                   );
                 },
               ),
+              // Optional: Show active filters summary
+              if (_searchQuery.isNotEmpty || _selectedCategory != "All")
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.filter_alt, size: 14, color: Colors.grey),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Active filters: ',
+                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                      ),
+                      if (_searchQuery.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.shade50,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            'Search: "$_searchQuery"',
+                            style: TextStyle(fontSize: 11, color: Colors.blue.shade700),
+                          ),
+                        ),
+                      if (_searchQuery.isNotEmpty && _selectedCategory != "All")
+                        const SizedBox(width: 4),
+                      if (_selectedCategory != "All")
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade50,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            'Category: $_selectedCategory',
+                            style: TextStyle(fontSize: 11, color: Colors.green.shade700),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
             ],
           ),
         ),
@@ -341,7 +394,7 @@ class _SearchScreenState extends State<SearchScreen> {
           padding: const EdgeInsets.only(bottom: 16),
           child: ProductWidget(
             product: product,
-            isCompact: true, // Use compact layout for list view
+            isCompact: true,
           ),
         );
       },
@@ -396,6 +449,41 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ),
           ],
+          // Show category suggestions when no search results
+          if (_searchQuery.isNotEmpty && _selectedCategory == "All")
+            Padding(
+              padding: const EdgeInsets.only(top: 24),
+              child: Column(
+                children: [
+                  Text(
+                    'Try these categories:',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    children: _categories
+                        .where((c) => c != "All")
+                        .take(4)
+                        .map((category) {
+                      return ActionChip(
+                        label: Text(category),
+                        onPressed: () {
+                          setState(() {
+                            _selectedCategory = category;
+                            _isSearching = true;
+                          });
+                        },
+                        backgroundColor: Colors.grey.shade200,
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );

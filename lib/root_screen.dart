@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:iconly/iconly.dart';
+import 'package:smartshop/screens/cart/cart_screen.dart';
 import 'package:smartshop/screens/home_screen.dart';
 import 'package:smartshop/screens/profile_screen.dart';
 import 'package:smartshop/screens/search_screen.dart';
@@ -20,7 +21,7 @@ class _RootScreenState extends State<RootScreen> {
   late PageController controller;
   @override
   void initState() {
-    screens = const [HomeScreen(), SearchScreen(), ProfileScreen()];
+    screens = const [HomeScreen(), SearchScreen(),CartScreen(), ProfileScreen()];
 
     controller = PageController(initialPage: currentScreen);
 

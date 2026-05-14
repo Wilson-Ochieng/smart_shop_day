@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:smartshop/constants/styles.dart';
 import 'package:smartshop/firebase_options.dart';
 import 'package:smartshop/models/product_model.dart';
+import 'package:smartshop/providers/cart_prodiver.dart';
 import 'package:smartshop/providers/product_provider.dart';
 import 'package:smartshop/providers/theme_provider.dart';
 import 'package:smartshop/providers/user_provider.dart';
@@ -16,27 +17,26 @@ import 'package:smartshop/screens/admin/product_form_screen.dart';
 import 'package:smartshop/screens/auth/forgot_password.dart';
 import 'package:smartshop/screens/auth/login_screen.dart';
 import 'package:smartshop/screens/auth/register_screen.dart';
+import 'package:smartshop/screens/cart/cart_screen.dart';
 import 'package:smartshop/screens/inner_screens/wishlisht_screen.dart';
+import 'package:smartshop/screens/orders/order_status_screen.dart';
+import 'package:smartshop/screens/orders/orders_screen.dart';
 import 'package:smartshop/screens/product_detail_screen.dart';
-import 'package:smartshop/screens/search_screen.dart'; 
+import 'package:smartshop/screens/search_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-    await dotenv.load();
+  await dotenv.load();
 
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-          create: (_) => ThemeProvider(),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => UserProvider(),
-        ),
-       ChangeNotifierProvider(create: (_) => ProductProvider()),
-       ChangeNotifierProvider(create: (_) => WishlistProvider()),
-
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => ProductProvider()),
+        ChangeNotifierProvider(create: (_) => WishlistProvider()),
+        ChangeNotifierProvider(create: (_) => CartProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
@@ -55,10 +55,16 @@ void main() async {
               RegisterScreen.routName: (context) => const RegisterScreen(),
               RootScreen.routName: (context) => const RootScreen(),
               AdminDashboard.routName: (context) => const AdminDashboard(),
-              ProductFormScreen.routName: (context) => const ProductFormScreen(),
-              ForgotPasswordScreen.routeName: (context) => const ForgotPasswordScreen(),
-              SearchScreen.routName: (context) => const SearchScreen(), 
-              WishlistScreen.routName:(context) => const WishlistScreen()
+              ProductFormScreen.routName: (context) =>
+                  const ProductFormScreen(),
+              ForgotPasswordScreen.routeName: (context) =>
+                  const ForgotPasswordScreen(),
+              SearchScreen.routName: (context) => const SearchScreen(),
+              WishlistScreen.routName: (context) => const WishlistScreen(),
+              CartScreen.routName: (context) => const CartScreen(),
+              OrderStatusScreen.routeName: (context) => OrderStatusScreen(orderId: ModalRoute.of(context)!.settings.arguments as String,),
+              OrderScreen.routeName:(context) => const OrderScreen(orderData: {},),
+              
             },
             onGenerateRoute: (settings) {
               // Handle routes that need arguments
