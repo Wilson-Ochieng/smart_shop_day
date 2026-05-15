@@ -252,8 +252,94 @@ app.post("/initiate-stk-push", async (req, res) => {
 /**
  * ✅ M-Pesa Callback URL
  */
+// app.post("/mpesa-callback", async (req, res) => {
+//   console.log("M-Pesa Callback:", JSON.stringify(req.body));
+
+//   // Send immediate response to M-Pesa
+//   res.status(200).json({
+//     ResultCode: 0,
+//     ResultDesc: "Success",
+//   });
+
+//   // Process callback asynchronously
+//   try {
+//     const callback = req.body;
+
+//     if (callback.Body && callback.Body.stkCallback) {
+//       const stkCallback = callback.Body.stkCallback;
+//       const resultCode = parseInt(stkCallback.ResultCode);
+//       const checkoutRequestId = stkCallback.CheckoutRequestID;
+
+//       console.log("Processing callback for:", checkoutRequestId);
+
+//       let mpesaStatus = "pending";
+//       const mpesaResponse = stkCallback.ResultDesc;
+
+//       if (resultCode === 0) {
+//         mpesaStatus = "paid";
+//         console.log("✅ Payment successful");
+//       } else if (resultCode === 1031 || resultCode === 1032) {
+//         mpesaStatus = "cancelled";
+//         console.log("❌ Payment cancelled");
+//       } else {
+//         mpesaStatus = "failed";
+//         console.log("❌ Payment failed");
+//       }
+
+//       // Find and update order
+//       try {
+//         const ordersQuery = await db
+//             .collection("orders")
+//             .where("checkoutRequestId", "==", checkoutRequestId)
+//             .limit(1)
+//             .get();
+
+//         if (!ordersQuery.empty) {
+//           const orderId = ordersQuery.docs[0].id;
+
+//           const updateData = {
+//             mpesaStatus: mpesaStatus,
+//             mpesaResponse: mpesaResponse,
+//             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+//           };
+
+//           // Add receipt number if payment was successful
+//           if (
+//             resultCode === 0 &&
+//             stkCallback.CallbackMetadata &&
+//             stkCallback.CallbackMetadata.Item
+//           ) {
+//             const items = stkCallback.CallbackMetadata.Item;
+//             const receiptItem = items.find((item) => {
+//               return item.Name === "MpesaReceiptNumber";
+//             });
+//             if (receiptItem) {
+//               updateData.mpesaReceiptNumber = receiptItem.Value;
+//               console.log("Receipt Number:", receiptItem.Value);
+//             }
+//           }
+
+//           await db.collection("orders").doc(orderId).update(updateData);
+//           console.log("✅ Order updated:", orderId);
+//         } else {
+//           console.log(
+//               "No order found for checkoutRequestId:",
+//               checkoutRequestId,
+//           );
+//         }
+//       } catch (error) {
+//         console.error("Error updating order:", error);
+//       }
+//     }
+//   } catch (error) {
+//     console.error("Callback processing error:", error);
+//   }
+// });
 app.post("/mpesa-callback", async (req, res) => {
-  console.log("M-Pesa Callback:", JSON.stringify(req.body));
+  console.log("=".repeat(80));
+  console.log("📞 M-Pesa Callback Received at:", new Date().toISOString());
+  console.log("📨 Full Request Body:", JSON.stringify(req.body, null, 2));
+  console.log("-".repeat(80));
 
   // Send immediate response to M-Pesa
   res.status(200).json({
@@ -265,76 +351,151 @@ app.post("/mpesa-callback", async (req, res) => {
   try {
     const callback = req.body;
 
-    if (callback.Body && callback.Body.stkCallback) {
-      const stkCallback = callback.Body.stkCallback;
-      const resultCode = parseInt(stkCallback.ResultCode);
-      const checkoutRequestId = stkCallback.CheckoutRequestID;
+    if (!callback.Body || !callback.Body.stkCallback) {
+      console.log("⚠️ Invalid callback format");
+      return;
+    }
 
-      console.log("Processing callback for:", checkoutRequestId);
+    const stkCallback = callback.Body.stkCallback;
+    const resultCode = parseInt(stkCallback.ResultCode);
+    const checkoutRequestId = stkCallback.CheckoutRequestID;
+    const merchantRequestId = stkCallback.MerchantRequestID;
+    const resultDesc = stkCallback.ResultDesc;
 
-      let mpesaStatus = "pending";
-      const mpesaResponse = stkCallback.ResultDesc;
+    console.log(`🆔 CheckoutRequestID: ${checkoutRequestId}`);
+    console.log(`🆔 MerchantRequestID: ${merchantRequestId}`);
+    console.log(`📊 ResultCode: ${resultCode}`);
+    console.log(`📝 ResultDesc: ${resultDesc}`);
 
-      if (resultCode === 0) {
-        mpesaStatus = "paid";
-        console.log("✅ Payment successful");
-      } else if (resultCode === 1031 || resultCode === 1032) {
-        mpesaStatus = "cancelled";
-        console.log("❌ Payment cancelled");
-      } else {
-        mpesaStatus = "failed";
-        console.log("❌ Payment failed");
-      }
+    let mpesaStatus = "pending";
+    let receiptNumber = null;
 
-      // Find and update order
-      try {
-        const ordersQuery = await db
-            .collection("orders")
-            .where("checkoutRequestId", "==", checkoutRequestId)
-            .limit(1)
-            .get();
-
-        if (!ordersQuery.empty) {
-          const orderId = ordersQuery.docs[0].id;
-
-          const updateData = {
-            mpesaStatus: mpesaStatus,
-            mpesaResponse: mpesaResponse,
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          };
-
-          // Add receipt number if payment was successful
-          if (
-            resultCode === 0 &&
-            stkCallback.CallbackMetadata &&
-            stkCallback.CallbackMetadata.Item
-          ) {
-            const items = stkCallback.CallbackMetadata.Item;
-            const receiptItem = items.find((item) => {
-              return item.Name === "MpesaReceiptNumber";
-            });
-            if (receiptItem) {
-              updateData.mpesaReceiptNumber = receiptItem.Value;
-              console.log("Receipt Number:", receiptItem.Value);
-            }
-          }
-
-          await db.collection("orders").doc(orderId).update(updateData);
-          console.log("✅ Order updated:", orderId);
-        } else {
-          console.log(
-              "No order found for checkoutRequestId:",
-              checkoutRequestId,
-          );
+    if (resultCode === 0) {
+      mpesaStatus = "paid";
+      console.log("✅ Payment successful!");
+      
+      // Extract receipt number
+      if (stkCallback.CallbackMetadata && stkCallback.CallbackMetadata.Item) {
+        const items = stkCallback.CallbackMetadata.Item;
+        const receiptItem = items.find((item) => item.Name === "MpesaReceiptNumber");
+        if (receiptItem) {
+          receiptNumber = receiptItem.Value;
+          console.log("🧾 Receipt Number:", receiptNumber);
         }
-      } catch (error) {
-        console.error("Error updating order:", error);
+      }
+    } else if (resultCode === 1031 || resultCode === 1032) {
+      mpesaStatus = "cancelled";
+      console.log("❌ Payment cancelled");
+    } else {
+      mpesaStatus = "failed";
+      console.log("❌ Payment failed");
+    }
+
+    // 🔍 Find and update order - TRY MULTIPLE METHODS
+    let orderFound = false;
+    let orderId = null;
+
+    // Method 1: Direct query by checkoutRequestId
+    console.log(`🔍 Method 1: Searching by checkoutRequestId: ${checkoutRequestId}`);
+    let ordersQuery = await db
+      .collection("orders")
+      .where("checkoutRequestId", "==", checkoutRequestId)
+      .limit(1)
+      .get();
+
+    if (!ordersQuery.empty) {
+      orderFound = true;
+      orderId = ordersQuery.docs[0].id;
+      console.log(`✅ Found order by checkoutRequestId: ${orderId}`);
+    }
+
+    // Method 2: Try by merchantRequestId
+    if (!orderFound && merchantRequestId) {
+      console.log(`🔍 Method 2: Searching by merchantRequestId: ${merchantRequestId}`);
+      ordersQuery = await db
+        .collection("orders")
+        .where("merchantRequestId", "==", merchantRequestId)
+        .limit(1)
+        .get();
+
+      if (!ordersQuery.empty) {
+        orderFound = true;
+        orderId = ordersQuery.docs[0].id;
+        console.log(`✅ Found order by merchantRequestId: ${orderId}`);
       }
     }
+
+    // Method 3: Search by orderId from the callback (if it was included)
+    if (!orderFound && callback.orderId) {
+      console.log(`🔍 Method 3: Checking direct orderId: ${callback.orderId}`);
+      const doc = await db.collection("orders").doc(callback.orderId).get();
+      if (doc.exists) {
+        orderFound = true;
+        orderId = callback.orderId;
+        console.log(`✅ Found order by direct ID: ${orderId}`);
+      }
+    }
+
+    // Method 4: Search by scanning recent orders (last resort)
+    if (!orderFound) {
+      console.log("🔍 Method 4: Scanning recent orders...");
+      const recentOrders = await db
+        .collection("orders")
+        .orderBy("createdAt", "desc")
+        .limit(10)
+        .get();
+
+      for (const doc of recentOrders.docs) {
+        const data = doc.data();
+        if (data.checkoutRequestId === checkoutRequestId || 
+            data.merchantRequestId === merchantRequestId) {
+          orderFound = true;
+          orderId = doc.id;
+          console.log(`✅ Found order by scanning: ${orderId}`);
+          break;
+        }
+      }
+    }
+
+    if (orderFound && orderId) {
+      const updateData = {
+        mpesaStatus: mpesaStatus,
+        mpesaResponse: resultDesc,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      };
+
+      if (receiptNumber) {
+        updateData.mpesaReceiptNumber = receiptNumber;
+        updateData.status = "paid";
+      }
+
+      console.log(`📝 Updating order ${orderId} with:`, updateData);
+      await db.collection("orders").doc(orderId).update(updateData);
+      console.log(`✅ Order ${orderId} updated successfully!`);
+    } else {
+      console.log(`❌❌❌ CRITICAL: No order found for callback`);
+      console.log(`   CheckoutRequestID: ${checkoutRequestId}`);
+      console.log(`   MerchantRequestID: ${merchantRequestId}`);
+      
+      // Save to debug collection for investigation
+      await db.collection("callback_debug").add({
+        checkoutRequestId: checkoutRequestId,
+        merchantRequestId: merchantRequestId,
+        resultCode: resultCode,
+        resultDesc: resultDesc,
+        receiptNumber: receiptNumber,
+        fullCallback: callback,
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      console.log("📝 Saved callback to debug collection");
+    }
   } catch (error) {
-    console.error("Callback processing error:", error);
+    console.error("🔥 Callback processing error:", error);
   }
+  
+  console.log("=".repeat(80));
 });
+
 
 /**
  * ✅ Firebase Secrets Test

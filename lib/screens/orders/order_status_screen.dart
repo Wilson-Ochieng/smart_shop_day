@@ -463,8 +463,8 @@ class _OrderStatusScreenState extends State<OrderStatusScreen> {
   
   Widget _buildCountdownTimer() {
     final remaining = _maxWaitTime - _secondsElapsed;
-    final minutes = (remaining ~/ 60).toString().padLeft(2, '0');
-    final seconds = (remaining % 60).toString().padLeft(2, '0');
+    final minutes = (remaining ~/ 60).toString().padLeft(1, '0');
+    final seconds = (remaining % 60).toString().padLeft(1, '0');
     
     return Container(
       padding: EdgeInsets.all(12),

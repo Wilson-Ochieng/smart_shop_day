@@ -1,5 +1,5 @@
 class ApiConfig {
-    static const String ngrokUrl = 'https://122f-41-139-172-215.ngrok-free.app';
+    static const String ngrokUrl = 'https://9633-41-139-172-215.ngrok-free.app';
   
   // Your Firebase project ID
   static const String projectId = 'demprojo';
