@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:smartshop/models/orders_model.dart';
+import 'package:smartshop/config/api_config.dart';  
 
 class OrdersProvider with ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -103,7 +104,6 @@ class OrdersProvider with ChangeNotifier {
     });
   }
 
-  // Create a new order (called from OrderSummaryScreen)
   // Create a new order (called from OrderSummaryScreen)
   Future<Map<String, dynamic>> createOrder({
     required List<Map<String, dynamic>> products,
@@ -222,7 +222,7 @@ class OrdersProvider with ChangeNotifier {
     }
   }
 
-  // Initiate M-Pesa payment
+  // ✅ UPDATED: Initiate M-Pesa payment using ngrok URL
   Future<String> _initiateMpesaPayment({
     required String orderId,
     required String phone,
@@ -230,12 +230,12 @@ class OrdersProvider with ChangeNotifier {
   }) async {
     try {
       debugPrint('Initiating M-Pesa payment for order: $orderId');
+      debugPrint('📍 Using API URL: ${ApiConfig.initiateStkPush}');
 
-      final url = Uri.parse(
-        'https://us-central1-dukaletu2-66d0b.cloudfunctions.net/api/initiate-stk-push',
-      );
+      // ✅ Use ngrok URL from ApiConfig
+      final url = Uri.parse(ApiConfig.initiateStkPush);
 
-      // Format phone number
+      // Format phone number to 254XXXXXXXXX
       String formattedPhone = phone;
       if (!phone.startsWith('254')) {
         if (phone.startsWith('0')) {
@@ -249,6 +249,7 @@ class OrdersProvider with ChangeNotifier {
 
       debugPrint('📡 Phone (formatted): $formattedPhone');
       debugPrint('💰 Amount: $amount');
+      debugPrint('🆔 OrderId: $orderId');
 
       final response = await http
           .post(
@@ -260,7 +261,7 @@ class OrdersProvider with ChangeNotifier {
               'orderId': orderId,
             }),
           )
-          .timeout(Duration(seconds: 30));
+          .timeout(const Duration(seconds: 30));
 
       debugPrint('📨 Response Status: ${response.statusCode}');
       debugPrint('📨 Response Body: ${response.body}');
@@ -314,15 +315,18 @@ class OrdersProvider with ChangeNotifier {
     }
   }
 
-  // Check payment status from backend
+  // ✅ UPDATED: Check payment status using ngrok URL
   Future<Map<String, dynamic>> checkPaymentStatus({
     required String orderId,
     String? checkoutRequestId,
   }) async {
     try {
-      final url = Uri.parse(
-        'https://us-central1-dukaletu2-66d0b.cloudfunctions.net/api/check-payment',
-      );
+      // ✅ Use ngrok URL from ApiConfig
+      final url = Uri.parse(ApiConfig.checkPayment);
+      
+      debugPrint('📍 Checking payment status at: $url');
+      debugPrint('🆔 OrderId: $orderId');
+      debugPrint('🆔 CheckoutRequestId: $checkoutRequestId');
 
       final response = await http.post(
         url,
@@ -331,12 +335,15 @@ class OrdersProvider with ChangeNotifier {
           'orderId': orderId,
           'checkoutRequestId': checkoutRequestId,
         }),
-      );
+      ).timeout(const Duration(seconds: 15));
+
+      debugPrint('📨 Status Check Response: ${response.statusCode}');
+      debugPrint('📨 Status Check Body: ${response.body}');
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
-        throw Exception('Failed to check payment status');
+        throw Exception('Failed to check payment status: ${response.statusCode}');
       }
     } catch (error) {
       debugPrint('Check payment error: $error');
