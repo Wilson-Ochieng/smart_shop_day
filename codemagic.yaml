@@ -4,8 +4,14 @@ workflows:
     environment:
       flutter: stable
     scripts:
-      - name: Install dependencies
-        script: flutter pub get
+      - name: Clean and get dependencies
+        script: |
+          flutter clean
+          flutter pub get
+      - name: Check for outdated packages
+        script: flutter pub outdated
+      - name: Upgrade packages
+        script: flutter pub upgrade
       - name: Build APK
         script: flutter build apk --release
     artifacts:
