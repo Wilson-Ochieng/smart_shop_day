@@ -1,6 +1,6 @@
 // Updated heart_button_widget.dart
 import 'package:flutter/material.dart';
-import 'package:iconly/iconly.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:provider/provider.dart';
 import 'package:smartshop/models/product_model.dart';
 import 'package:smartshop/providers/wishlist_provider.dart';

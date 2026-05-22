@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:iconly/iconly.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:smartshop/constants/validators.dart';
 import 'package:smartshop/screens/auth/login_screen.dart';
 import 'package:smartshop/services/app_manager.dart';
@@ -90,7 +90,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         hintText: 'johndoe@email.com',
                         prefixIcon: Container(
                           padding: const EdgeInsets.all(12),
-                          child: const Icon(IconlyLight.message),
+                          child: const Icon(IconlyBold.message),
                         ),
                         filled: true,
                       ),

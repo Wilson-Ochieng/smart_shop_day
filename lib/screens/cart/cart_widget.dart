@@ -1,6 +1,6 @@
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
-import 'package:iconly/iconly.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:smartshop/models/cart_model.dart';
@@ -162,7 +162,7 @@ class CartWidget extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          const Icon(IconlyLight.arrow_down_2, size: 16),
+                          const Icon(IconlyLight.arrowDown2, size: 16),
                           const SizedBox(width: 4),
                           Text("Qty: ${cartModel.quantity}"),
                         ],

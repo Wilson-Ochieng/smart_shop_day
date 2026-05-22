@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:iconly/iconly.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:provider/provider.dart';
 import 'package:smartshop/providers/theme_provider.dart';
 import 'package:smartshop/providers/user_provider.dart';
@@ -209,7 +209,7 @@ class CustomListTile extends StatelessWidget {
       },
       title: SubTitletext(label: text),
       leading: Image.asset(imagePath, height: 34),
-      trailing: const Icon(IconlyLight.arrow_right_2),
+      trailing: const Icon(IconlyLight.arrowDown2),
     );
   }
 }

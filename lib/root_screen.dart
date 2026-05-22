@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:iconly/iconly.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:provider/provider.dart';
 import 'package:smartshop/providers/cart_prodiver.dart';
 import 'package:smartshop/screens/cart/cart_screen.dart';
@@ -75,11 +75,11 @@ class _RootScreenState extends State<RootScreen> {
               //   label: 'Cart',
               // ),
               NavigationDestination(
-                selectedIcon: Icon(IconlyBold.bag_2),
+                selectedIcon: Icon(IconlyBold.bag2),
                 icon: Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    const Icon(IconlyLight.bag_2),
+                    const Icon(IconlyLight.bag2),
                     if (cartItemCount > 0)
                       Positioned(
                         right: -4,
