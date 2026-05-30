@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:smartshop/constants/validators.dart';
 
 import 'package:smartshop/providers/user_provider.dart';
+import 'package:smartshop/screens/auth/google_sign_in_btn.dart';
 import 'package:smartshop/wigets/apptextname.dart';
 import 'package:smartshop/wigets/titletext.dart';
 
@@ -242,6 +243,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         },
                         child: Text("Register"),
                       ),
+
+                      const SizedBox(height:  20,),
+                      GoogleButtonScreen(),
                     ],
                   ),
                 ),
